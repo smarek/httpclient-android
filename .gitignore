@@ -1,0 +1,8 @@
+/httpclient
+/httpclient-android
+/httpcore
+/httpmime
+/httpclient-cache
+
+.gradle
+build
