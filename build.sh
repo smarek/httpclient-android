@@ -1,12 +1,18 @@
 #!/bin/sh
 
 UPSTREAM_VER=4.3.3
-
-SED_CMD="sed -i"
+: ${UPDATE_UPSTREAM:=1}
+# JGSS / GSSAPI now doesn't compile correctly
+: ${INCLUDE_JGSS_API:=0}
+: ${SED_CMD:="sed -i"}
 # For Mac OS X install gnu-sed from Homebrew or elsewhere, and use following SED_CMD
 # SED_CMD="gsed -i"
 
-UPDATE_UPSTREAM=1
+echo "UPDATE_UPSTREAM=${UPDATE_UPSTREAM}"
+echo "INCLUDE_JGSS_API=${INCLUDE_JGSS_API}"
+echo "SED_CMD=${SED_CMD}"
+
+KERBEROS_LIB_NAME="kerberos"
 
 if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
   # Checkout svn repositories of core/client/cache
@@ -18,8 +24,18 @@ if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
   svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${UPSTREAM_VER}/httpclient-cache/ httpclient-cache
   echo "Downloading Upstream HttpMime"
   svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${UPSTREAM_VER}/httpmime/ httpmime
+  if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
+    echo "Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
+    if [ ! -d "$KERBEROS_LIB_NAME" ]; then
+      git clone https://github.com/cconlon/kerberos-android-ndk.git ${KERBEROS_LIB_NAME}
+      #git clone https://github.com/cconlon/kerberos-java-gssapi.git
+    else
+      git -C ${KERBEROS_LIB_NAME} pull origin master
+      git -C ${KERBEROS_LIB_NAME} reset --hard
+    fi
+  fi
 else
-  echo "Skipping Upstream SVN update"
+  echo "Skipping Upstream sources update"
 fi
 
 PROJECTNAME=httpclient-android
@@ -45,7 +61,12 @@ CLIENTCACHEDIR=`find . -type d | grep '/httpclient-cache/src/main/java/org/apach
 CLIENTMIMEDIR=`find . -type d | grep '/httpmime/src/main/java/org/apache/http$'`
 COREDIR=`find . -type d | grep '/httpcore/src/main/java/org/apache/http$'`
 COREDEPRECATEDDIR=`find . -type d | grep '/httpcore/src/main/java-deprecated/org/apache/http$'`
-
+if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
+  GSSJAVADIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/src$"`
+  GSSNATIVEDIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/jni$"`
+  echo "GSSJAVADIR=${GSSJAVADIR}"
+  echo "GSSNATIVEDIR=${GSSNATIVEDIR}"
+fi
 echo "Copying upstream sources into correct directories"
 cd ${ROOTDIR}/${COREDIR}
 cp -R * ${PACKAGEDIR}
@@ -72,27 +93,49 @@ mkdir ${EXTRAPACKAGENAME}
 cp -R ${ROOTDIR}/extras/* ${EXTRAPACKAGENAME}
 cd ${EXTRAPACKAGENAME}
 find . -name "*.java" -exec ${SED_CMD} "s/sedpackagename/${PACKAGENAME}.${EXTRAPACKAGENAME}/g" {} \;
-cd ..
+cd ${PACKAGEDIR}
 
-rm impl/auth/NegotiateScheme.java
-rm impl/auth/NegotiateSchemeFactory.java
-rm impl/auth/GGSSchemeBase.java
-rm impl/auth/KerberosScheme.java
-rm impl/auth/KerberosSchemeFactory.java
-rm impl/auth/SPNegoScheme.java
-rm impl/auth/SPNegoSchemeFactory.java
+if [ ${INCLUDE_JGSS_API} -ne 1 ]; then
 
-find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.KerberosSchemeFactory;/c \/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\/" {} +
-find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.SPNegoSchemeFactory;/c \/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\/" {} +
-find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.NegotiateSchemeFactory;/c \/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\/" {} +
-find . -name "ProxyClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/this.authSchemeRegistry.register([^)]*SPNegoSchemeFactory());/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "ProxyClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/this.authSchemeRegistry.register([^)]*KerberosSchemeFactory());/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*SPNegoSchemeFactory());/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*KerberosSchemeFactory());/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*NegotiateSchemeFactory());/\/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*SPNegoSchemeFactory())/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*KerberosSchemeFactory())/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
-find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*NegotiateSchemeFactory())/\/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  rm impl/auth/NegotiateScheme.java
+  rm impl/auth/NegotiateSchemeFactory.java
+  rm impl/auth/GGSSchemeBase.java
+  rm impl/auth/KerberosScheme.java
+  rm impl/auth/KerberosSchemeFactory.java
+  rm impl/auth/SPNegoScheme.java
+  rm impl/auth/SPNegoSchemeFactory.java
+
+  find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.KerberosSchemeFactory;/c \/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\/" {} +
+  find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.SPNegoSchemeFactory;/c \/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\/" {} +
+  find . -name "*.java" -exec ${SED_CMD} "/impl\.auth\.NegotiateSchemeFactory;/c \/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\/" {} +
+  find . -name "ProxyClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/this.authSchemeRegistry.register([^)]*SPNegoSchemeFactory());/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "ProxyClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/this.authSchemeRegistry.register([^)]*KerberosSchemeFactory());/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*SPNegoSchemeFactory());/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*KerberosSchemeFactory());/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "AbstractHttpClient.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/registry.register([^)]*NegotiateSchemeFactory());/\/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*SPNegoSchemeFactory())/\/\* SPNegoSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*KerberosSchemeFactory())/\/\* KerberosSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+  find . -name "HttpClientBuilder.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/.register([^)]*NegotiateSchemeFactory())/\/\* NegotiateSchemeFactory removed by HttpClient for Android script. \*\//g;p;}' {} +
+else
+  cd ${ROOTDIR}/${KERBEROS_LIB_NAME}
+  swig -java -package edu.mit.jgss.swig -outdir ./src/edu/mit/jgss/swig -o ./jni/gsswrapper_wrap.c ./jni/gsswrapper.i
+  cd ${ROOTDIR}/${GSSJAVADIR}
+  cp -R edu ${PACKAGEDIR}
+  cp -R org/ietf ${PACKAGEDIR}
+  cd ${ROOTDIR}/${GSSNATIVEDIR}
+  mkdir -p ${ANDROIDPROJECTPATH}/src/main/jni/
+  cp -R * ${ANDROIDPROJECTPATH}/src/main/jni/
+  cd ${PACKAGEDIR}
+  find . -name "GssUtil.java" -exec ${SED_CMD} "s/new Boolean(second)\.toString();/Boolean.toString(second);/" {} +
+  find . -name "GssUtil.java" -exec ${SED_CMD} "s/new Integer(second)\.toString();/Integer.toString(second);/" {} +
+  find . -name "GGSSchemeBase.java" -exec ${SED_CMD} "/private final Base64 base64codec;/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
+  find . -name "GGSSchemeBase.java" -exec ${SED_CMD} "/this\.base64codec = new Base64(0);/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
+  find . -name "GGSSchemeBase.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/base64codec.encode(\([^;]*\)));/Base64.encode(\1, Base64.NO_WRAP));/g;p;}' {} +
+  find . -name "KerberosAppActivity.java" -exec rm {} +
+  find . -name "edu_mit_kerberos_KerberosAppActivity.h" -exec rm {} +
+fi
+
+cd ${PACKAGEDIR}
 
 find . -name "*.java" -exec ${SED_CMD} "/commons\.codec\.binary\.Base64;/c import ${PACKAGENAME}\.${EXTRAPACKAGENAME}.Base64;" {} +
 find . -name "BasicScheme.java" -exec ${SED_CMD} "/private final Base64 base64codec;/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
@@ -116,6 +159,12 @@ find . -name "*.java" -exec ${SED_CMD} 's/LogFactory.getLog(\(.*\))/new HttpClie
 echo "Replacing org.apache.http with ${PACKAGENAME}"
 find . -name "*.java" -exec ${SED_CMD} "s/org\.apache\.http/${PACKAGENAME}/g" {} +
 find . -name "*.html" -exec ${SED_CMD} "s/org\.apache\.http/${PACKAGENAME}/g" {} +
+if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
+  echo "Replacing org.ietf.jgss with ${PACKAGENAME}.ietf.jgss"
+  find . -name "*.java" -exec ${SED_CMD} "s/org\.ietf\.jgss/${PACKAGENAME}\.ietf\.jgss/g" {} +
+  echo "Replacing edu.mit.jgss with ${PACKAGENAME}.edu.mit.jgss"
+  find . -name "*.java" -exec ${SED_CMD} "s/edu\.mit\.jgss/${PACKAGENAME}\.edu\.mit\.jgss/g" {} +
+fi
 
 echo "Removing setSeed, use PRNGFixes.apply() in your code instead"
 ${SED_CMD} "s/this\.rnd\.setSeed(System\.currentTimeMillis());//g" impl/client/cache/BasicIdGenerator.java

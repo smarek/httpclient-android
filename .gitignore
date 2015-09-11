@@ -3,6 +3,7 @@
 /httpcore
 /httpmime
 /httpclient-cache
+/kerberos
 
 .gradle
 build
