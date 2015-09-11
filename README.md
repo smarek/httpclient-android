@@ -7,6 +7,7 @@ Download the repository and simply hit `./build.sh` script
 Required dependencies are:
   - JDK 6 or newer
   - Gradle 2.4 or newer
+  - `find`, `grep`, `svn` and `sed` (or `gsed` for OS X)
   
 This repository version will publish the library under namespace `cz.msebera.android.httpclient`
 
