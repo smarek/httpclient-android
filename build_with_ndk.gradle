@@ -21,6 +21,11 @@ android {
     defaultConfig {
         minSdkVersion 3
         targetSdkVersion 23
+
+        ndk {
+            ldLibs 'com_err', 'krb5support', 'gssapi_krb5', 'krb5', 'k5crypto'
+            moduleName "gsswrapper_wrap"
+        }
     }
 
     lintOptions {

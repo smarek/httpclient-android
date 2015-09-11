@@ -1,12 +1,16 @@
-#!/bin/sh
+#!/bin/sh -x
 
 UPSTREAM_VER=4.3.3
 : ${UPDATE_UPSTREAM:=1}
 # JGSS / GSSAPI now doesn't compile correctly
 : ${INCLUDE_JGSS_API:=0}
-: ${SED_CMD:="sed -i"}
-# For Mac OS X install gnu-sed from Homebrew or elsewhere, and use following SED_CMD
-# SED_CMD="gsed -i"
+if [[ $OSTYPE == darwin* ]]; then
+  # For Mac OS X install gnu-sed from Homebrew or elsewhere, and use following SED_CMD
+  # SED_CMD="gsed -i"
+  : ${SED_CMD:="gsed -i"}
+else
+  : ${SED_CMD:="sed -i"}
+fi
 
 echo "UPDATE_UPSTREAM=${UPDATE_UPSTREAM}"
 echo "INCLUDE_JGSS_API=${INCLUDE_JGSS_API}"
@@ -158,7 +162,8 @@ find . -name "*.java" -exec ${SED_CMD} 's/LogFactory.getLog(\(.*\))/new HttpClie
 
 echo "Replacing org.apache.http with ${PACKAGENAME}"
 find . -name "*.java" -exec ${SED_CMD} "s/org\.apache\.http/${PACKAGENAME}/g" {} +
-find . -name "*.html" -exec ${SED_CMD} "s/org\.apache\.http/${PACKAGENAME}/g" {} +
+echo "Removing two package.html files, blocking javadoc generation"
+find . -name "package.html" -exec rm {} +
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
   echo "Replacing org.ietf.jgss with ${PACKAGENAME}.ietf.jgss"
   find . -name "*.java" -exec ${SED_CMD} "s/org\.ietf\.jgss/${PACKAGENAME}\.ietf\.jgss/g" {} +
@@ -175,7 +180,11 @@ cp ../AndroidManifest.xml src/main/
 ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
 
 echo "Gradle build proceed"
-cp ../build.gradle .
+if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
+  cp ../build_with_ndk.gradle build.gradle
+else
+  cp ../build.gradle .
+fi
 cp ../maven_push.gradle .
 cp ../gradle.properties .
 gradle assemble
