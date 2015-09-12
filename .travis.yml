@@ -1,5 +1,5 @@
 language: android
-jdk: openjdk7
+jdk: oraclejdk8
 android:
   components:
     - platform-tools
@@ -8,6 +8,5 @@ android:
     - android-23
   licenses:
     - '.+'
-script:
-  - ./build.sh
-  - gradle installArchives
+install: ./build.sh
+script: gradle installArchives
