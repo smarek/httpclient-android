@@ -1,4 +1,4 @@
-# httpclient-android
+# httpclient-android [![Build Status](https://travis-ci.org/smarek/httpclient-android.svg)](https://travis-ci.org/smarek/httpclient-android)
 
 Build script and dependencies to create repackaged upstream version of HttpClient and depdendencies (HttpMime, HttpCore, HttpClient-Cache) and get it working on Android API version from 3 to 23
 
