@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 UPSTREAM_VER=4.3.3
 : ${UPDATE_UPSTREAM:=1}
