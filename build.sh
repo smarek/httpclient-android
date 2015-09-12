@@ -42,8 +42,8 @@ else
   echo "Skipping Upstream sources update"
 fi
 
-PROJECTNAME=httpclient-android
-PACKAGENAME=cz.msebera.httpclient.android
+PROJECTNAME=httpclient
+PACKAGENAME=cz.msebera.android
 ROOTDIR=`pwd`
 PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
 ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
