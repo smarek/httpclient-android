@@ -15,6 +15,10 @@ fi
 echo "UPDATE_UPSTREAM=${UPDATE_UPSTREAM}"
 echo "INCLUDE_JGSS_API=${INCLUDE_JGSS_API}"
 echo "SED_CMD=${SED_CMD}"
+which bash
+which sh
+bash -version
+sh -version
 
 KERBEROS_LIB_NAME="kerberos"
 
@@ -188,3 +192,4 @@ fi
 cp ../maven_push.gradle .
 cp ../gradle.properties .
 gradle assemble
+gradle installArchives

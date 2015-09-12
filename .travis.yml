@@ -8,5 +8,5 @@ android:
     - android-23
   licenses:
     - '.+'
-install: ./build.sh
-script: gradle installArchives
+script: 
+  - ./build.sh
