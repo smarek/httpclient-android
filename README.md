@@ -15,7 +15,7 @@ Build params (ENV variables) you can use:
   - `UPDATE_UPSTREAM`, whether the build script should download SVN/GIT/... sources again (useful for recurring builds)
   - `SED_CMD` used variant of SED utility (default is `sed -i` on linux and `gsed -i` on Mac OS X)
   
-This repository version will publish the library under namespace `cz.msebera.android.httpclient`
+This repository version will publish the library under namespace `cz.msebera.android:httpclient:4.3.3`
 
 Using `gradle installArchives` will install the library to local Maven repository
 
@@ -25,7 +25,7 @@ Gradle dependency string, after having it installed
 
 ```gradle
 dependencies {
-  compile "cz.msebera.android.httpclient:httpclient-android:4.3.3"
+  compile "cz.msebera.android:httpclient:4.3.3"
 }
 ```
 
