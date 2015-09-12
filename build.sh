@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 UPSTREAM_VER=4.3.3
 : ${UPDATE_UPSTREAM:=1}
@@ -15,10 +15,14 @@ fi
 echo "UPDATE_UPSTREAM=${UPDATE_UPSTREAM}"
 echo "INCLUDE_JGSS_API=${INCLUDE_JGSS_API}"
 echo "SED_CMD=${SED_CMD}"
+
+# build env debug info
+echo ""
 which bash
 which sh
 bash -version
 sh -version
+echo ""
 
 KERBEROS_LIB_NAME="kerberos"
 
