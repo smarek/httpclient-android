@@ -64,7 +64,7 @@ echo "ROOTDIR             =  ${ROOTDIR}"
 echo "PACKAGEDIR          =  ${PACKAGEDIR}"
 echo "ANDROIDPROJECTPATH  =  ${ANDROIDPROJECTPATH}"
 
-rm -Rf ${ANDROIDPROJECTPATH}
+rm -rf ${ANDROIDPROJECTPATH}
 mkdir -p ${PACKAGEDIR}
 
 CLIENTDIR=`find . -type d | grep '/httpclient/src/main/java/org/apache/http$'`
