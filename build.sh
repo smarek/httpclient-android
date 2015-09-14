@@ -1,9 +1,28 @@
 #!/bin/bash
 
+GRADLEW_VERSION=2.6
+GRADLE_COMMAND="gradle"
+KERBEROS_LIB_NAME="kerberos"
+
+PROJECTNAME=httpclient-android
+PACKAGENAME=cz.msebera.android.httpclient
+ROOTDIR=`pwd`
+PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
+ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
+EXTRAPACKAGENAME=extras
+
 UPSTREAM_VER=4.3.3
+CORE_VER=${UPSTREAM_VER}
+CLIENT_VER=${UPSTREAM_VER}
+CACHE_VER=${UPSTREAM_VER}
+MIME_VER=${UPSTREAM_VER}
+
+: ${USE_GRADLE_WRAPPER:=1}
 : ${UPDATE_UPSTREAM:=1}
 # JGSS / GSSAPI now doesn't compile correctly
 : ${INCLUDE_JGSS_API:=0}
+: ${VERBOSE:=0}
+
 if [[ $OSTYPE == darwin* ]]; then
   # For Mac OS X install gnu-sed from Homebrew or elsewhere, and use following SED_CMD
   # SED_CMD="gsed -i"
@@ -12,32 +31,40 @@ else
   : ${SED_CMD:="sed -i"}
 fi
 
-echo "UPDATE_UPSTREAM=${UPDATE_UPSTREAM}"
-echo "INCLUDE_JGSS_API=${INCLUDE_JGSS_API}"
-echo "SED_CMD=${SED_CMD}"
+# Android Experimental Gradle plugin 2.0 works now only with 2.5 version
+if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
+  GRADLEW_VERSION=2.5
+fi
 
-# build env debug info
-echo ""
-which bash
-which sh
-bash -version
-sh -version
-echo ""
+if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
+  GRADLE_COMMAND="./gradlew"
+fi
 
-KERBEROS_LIB_NAME="kerberos"
+if [ ${VERBOSE} -ne 1 ]; then
+  GRADLE_COMMAND="${GRADLE_COMMAND} -q"
+fi
+
+echo ">> Env Variables"
+echo -e "UPDATE_UPSTREAM\t\t=\t${UPDATE_UPSTREAM}"
+echo -e "INCLUDE_JGSS_API\t=\t${INCLUDE_JGSS_API}"
+echo -e "SED_CMD\t\t\t=\t${SED_CMD}"
+echo -e "USE_GRADLE_WRAPPER\t=\t${USE_GRADLE_WRAPPER}"
+echo -e "GRADLE_COMMAND\t\t=\t${GRADLE_COMMAND}"
+echo -e "VERBOSE\t\t\t=\t${VERBOSE}"
+echo ""
 
 if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
-  # Checkout svn repositories of core/client/cache
-  echo "Downloading Upstream HttpCore"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${UPSTREAM_VER}/httpcore/ httpcore
-  echo "Downloading Upstream HttpClient"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${UPSTREAM_VER}/httpclient/ httpclient
-  echo "Downloading Upstream HttpClient-Cache"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${UPSTREAM_VER}/httpclient-cache/ httpclient-cache
-  echo "Downloading Upstream HttpMime"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${UPSTREAM_VER}/httpmime/ httpmime
+  # Updating upstream code bases
+  echo -e ">> Downloading Upstream HttpCore ${CORE_VER}"
+  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  echo -e ">> Downloading Upstream HttpClient ${CLIENT_VER}"
+  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  echo -e ">> Downloading Upstream HttpClient-Cache ${CACHE_VER}"
+  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
+  echo -e ">> Downloading Upstream HttpMime ${MIME_VER}"
+  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
   if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
-    echo "Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
+    echo -e ">> Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
     if [ ! -d "$KERBEROS_LIB_NAME" ]; then
       git clone https://github.com/cconlon/kerberos-android-ndk.git ${KERBEROS_LIB_NAME}
       #git clone https://github.com/cconlon/kerberos-java-gssapi.git
@@ -47,22 +74,17 @@ if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
     fi
   fi
 else
-  echo "Skipping Upstream sources update"
+  echo -e ">> Skipping Upstream sources update"
 fi
 
-PROJECTNAME=httpclient-android
-PACKAGENAME=cz.msebera.android.httpclient
-ROOTDIR=`pwd`
-PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
-ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
-EXTRAPACKAGENAME=extras
-
-echo "Project Settings:"
-echo "PROJECTNAME         =  ${PROJECTNAME}"
-echo "PACKAGENAME         =  ${PACKAGENAME}"
-echo "ROOTDIR             =  ${ROOTDIR}"
-echo "PACKAGEDIR          =  ${PACKAGEDIR}"
-echo "ANDROIDPROJECTPATH  =  ${ANDROIDPROJECTPATH}"
+echo ""
+echo -e ">> Project Settings:"
+echo -e "PROJECTNAME\t\t=\t${PROJECTNAME}"
+echo -e "PACKAGENAME\t\t=\t${PACKAGENAME}"
+echo -e "ROOTDIR\t\t\t=\t${ROOTDIR}"
+echo -e "PACKAGEDIR\t\t=\t${PACKAGEDIR}"
+echo -e "ANDROIDPROJECTPATH\t=\t${ANDROIDPROJECTPATH}"
+echo ""
 
 rm -rf ${ANDROIDPROJECTPATH}
 mkdir -p ${PACKAGEDIR}
@@ -73,13 +95,15 @@ CLIENTCACHEDIR=`find . -type d | grep '/httpclient-cache/src/main/java/org/apach
 CLIENTMIMEDIR=`find . -type d | grep '/httpmime/src/main/java/org/apache/http$'`
 COREDIR=`find . -type d | grep '/httpcore/src/main/java/org/apache/http$'`
 COREDEPRECATEDDIR=`find . -type d | grep '/httpcore/src/main/java-deprecated/org/apache/http$'`
+
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
   GSSJAVADIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/src$"`
   GSSNATIVEDIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/jni$"`
-  echo "GSSJAVADIR=${GSSJAVADIR}"
-  echo "GSSNATIVEDIR=${GSSNATIVEDIR}"
+  echo -e "GSSJAVADIR\t\t=\t${GSSJAVADIR}"
+  echo -e "GSSNATIVEDIR\t\t=\t${GSSNATIVEDIR}"
 fi
-echo "Copying upstream sources into correct directories"
+
+echo ">> Copying upstream sources into correct directories"
 cd ${ROOTDIR}/${COREDIR}
 cp -R * ${PACKAGEDIR}
 cd ${ROOTDIR}/${COREDEPRECATEDDIR}
@@ -95,12 +119,12 @@ cp -R * ${PACKAGEDIR}
 
 cd ${PACKAGEDIR}
 
-echo "Removing ehcache and memcached implementations"
+echo ">> Removing ehcache and memcached implementations"
 rm -rf ${PACKAGEDIR}/impl/client/cache/ehcache
 rm -rf ${PACKAGEDIR}/impl/client/cache/memcached
 
-echo "Adding extras, such as Base64, HttpClientAndroidLog and PRNGFixes"
-echo "These are available from package ${PACKAGENAME}.${EXTRAPACKAGENAME}"
+echo ">> Adding extras, such as Base64, HttpClientAndroidLog and PRNGFixes"
+echo ">> >> These are available from package ${PACKAGENAME}.${EXTRAPACKAGENAME}"
 mkdir ${EXTRAPACKAGENAME}
 cp -R ${ROOTDIR}/extras/* ${EXTRAPACKAGENAME}
 cd ${EXTRAPACKAGENAME}
@@ -168,26 +192,26 @@ find . -name "*.java" -exec ${SED_CMD} 's/private final Log \(.*\) = LogFactory.
 find . -name "*.java" -exec ${SED_CMD} 's/private final HttpClientAndroidLog log/public HttpClientAndroidLog log/g' {} +
 find . -name "*.java" -exec ${SED_CMD} 's/LogFactory.getLog(\(.*\))/new HttpClientAndroidLog(\1)/g' {} +
 
-echo "Replacing org.apache.http with ${PACKAGENAME}"
+echo ">> Replacing org.apache.http with ${PACKAGENAME}"
 find . -name "*.java" -exec ${SED_CMD} "s/org\.apache\.http/${PACKAGENAME}/g" {} +
-echo "Removing two package.html files, blocking javadoc generation"
+echo ">> Removing two package.html files, blocking javadoc generation"
 find . -name "package.html" -exec rm {} +
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
-  echo "Replacing org.ietf.jgss with ${PACKAGENAME}.ietf.jgss"
+  echo ">> Replacing org.ietf.jgss with ${PACKAGENAME}.ietf.jgss"
   find . -name "*.java" -exec ${SED_CMD} "s/org\.ietf\.jgss/${PACKAGENAME}\.ietf\.jgss/g" {} +
-  echo "Replacing edu.mit.jgss with ${PACKAGENAME}.edu.mit.jgss"
+  echo ">> Replacing edu.mit.jgss with ${PACKAGENAME}.edu.mit.jgss"
   find . -name "*.java" -exec ${SED_CMD} "s/edu\.mit\.jgss/${PACKAGENAME}\.edu\.mit\.jgss/g" {} +
 fi
 
-echo "Removing setSeed, use PRNGFixes.apply() in your code instead"
+echo ">> Removing setSeed, use PRNGFixes.apply() in your code instead"
 ${SED_CMD} "s/this\.rnd\.setSeed(System\.currentTimeMillis());//g" impl/client/cache/BasicIdGenerator.java
 
-echo "AndroidManifest.xml modification"
+echo ">> AndroidManifest.xml modification"
 cd ${ANDROIDPROJECTPATH}
 cp ../AndroidManifest.xml src/main/
 ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
 
-echo "Gradle build proceed"
+echo ">> Gradle build proceed"
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
   cp ../build_with_ndk.gradle build.gradle
 else
@@ -195,5 +219,24 @@ else
 fi
 cp ../maven_push.gradle .
 cp ../gradle.properties .
-gradle assemble
-gradle installArchives
+
+
+if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
+  echo ""
+  echo ">> Using Gradle Wrapper"
+  CMD="gradle"
+  if [ ${VERBOSE} -ne 1 ]; then
+    CMD="gradle -q"
+  fi
+  gradle wrapper --gradle-version ${GRADLEW_VERSION}
+fi
+
+echo ""
+echo ">> Assemble and install archives to local Maven repository"
+echo ""
+
+${GRADLE_COMMAND} installArchives
+
+echo ""
+echo ">> Finished"
+echo ""
