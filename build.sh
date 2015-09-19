@@ -1,15 +1,12 @@
 #!/bin/bash
 
-GRADLEW_VERSION=2.6
-GRADLE_COMMAND="gradle"
-KERBEROS_LIB_NAME="kerberos"
-
 PROJECTNAME=httpclient-android
 PACKAGENAME=cz.msebera.android.httpclient
 ROOTDIR=`pwd`
 PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
 ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
 EXTRAPACKAGENAME=extras
+KERBEROS_LIB_NAME="kerberos"
 
 UPSTREAM_VER=4.3.3
 CORE_VER=${UPSTREAM_VER}
@@ -17,9 +14,11 @@ CLIENT_VER=${UPSTREAM_VER}
 CACHE_VER=${UPSTREAM_VER}
 MIME_VER=${UPSTREAM_VER}
 
+: ${GRADLEW_VERSION:=2.6}
+: ${GRADLE_COMMAND:="gradle"}
+: ${SVN_COMMAND:="svn checkout"}
 : ${USE_GRADLE_WRAPPER:=1}
 : ${UPDATE_UPSTREAM:=1}
-# JGSS / GSSAPI now doesn't compile correctly
 : ${INCLUDE_JGSS_API:=0}
 : ${VERBOSE:=0}
 
@@ -42,6 +41,7 @@ fi
 
 if [ ${VERBOSE} -ne 1 ]; then
   GRADLE_COMMAND="${GRADLE_COMMAND} -q"
+  SVN_COMMAND="svn checkout -q"
 fi
 
 echo ">> Env Variables"
@@ -56,18 +56,17 @@ echo ""
 if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
   # Updating upstream code bases
   echo -e ">> Downloading Upstream HttpCore ${CORE_VER}"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
   echo -e ">> Downloading Upstream HttpClient ${CLIENT_VER}"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  $SVN_COMMAND https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
   echo -e ">> Downloading Upstream HttpClient-Cache ${CACHE_VER}"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
+  $SVN_COMMAND t https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
   echo -e ">> Downloading Upstream HttpMime ${MIME_VER}"
-  svn checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
+  $SVN_COMMAND  https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
   if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
     echo -e ">> Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
     if [ ! -d "$KERBEROS_LIB_NAME" ]; then
       git clone https://github.com/cconlon/kerberos-android-ndk.git ${KERBEROS_LIB_NAME}
-      #git clone https://github.com/cconlon/kerberos-java-gssapi.git
     else
       git -C ${KERBEROS_LIB_NAME} pull origin master
       git -C ${KERBEROS_LIB_NAME} reset --hard
@@ -228,7 +227,7 @@ if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
   if [ ${VERBOSE} -ne 1 ]; then
     CMD="gradle -q"
   fi
-  gradle wrapper --gradle-version ${GRADLEW_VERSION}
+  ${CMD} wrapper --gradle-version ${GRADLEW_VERSION}
 fi
 
 echo ""
