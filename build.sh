@@ -9,14 +9,14 @@ EXTRAPACKAGENAME=extras
 KERBEROS_LIB_NAME="kerberos"
 
 UPSTREAM_VER=4.3.3
-CORE_VER=${UPSTREAM_VER}
-CLIENT_VER=${UPSTREAM_VER}
-CACHE_VER=${UPSTREAM_VER}
-MIME_VER=${UPSTREAM_VER}
+CORE_VER=4.3.3
+CLIENT_VER=4.3.3
+CACHE_VER=4.3.3
+MIME_VER=4.3.3
 
 : ${GRADLEW_VERSION:=2.6}
 : ${GRADLE_COMMAND:="gradle"}
-: ${SVN_COMMAND:="svn checkout"}
+: ${SVN_COMMAND:="svn "}
 : ${USE_GRADLE_WRAPPER:=1}
 : ${UPDATE_UPSTREAM:=1}
 : ${INCLUDE_JGSS_API:=0}
@@ -41,7 +41,7 @@ fi
 
 if [ ${VERBOSE} -ne 1 ]; then
   GRADLE_COMMAND="${GRADLE_COMMAND} -q"
-  SVN_COMMAND="svn checkout -q"
+  SVN_COMMAND="svn -q "
 fi
 
 echo ">> Env Variables"
@@ -50,19 +50,41 @@ echo -e "INCLUDE_JGSS_API\t=\t${INCLUDE_JGSS_API}"
 echo -e "SED_CMD\t\t\t=\t${SED_CMD}"
 echo -e "USE_GRADLE_WRAPPER\t=\t${USE_GRADLE_WRAPPER}"
 echo -e "GRADLE_COMMAND\t\t=\t${GRADLE_COMMAND}"
+echo -e "SVN_COMMAND\t\t=\t${SVN_COMMAND}"
 echo -e "VERBOSE\t\t\t=\t${VERBOSE}"
 echo ""
 
 if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
   # Updating upstream code bases
+
   echo -e ">> Downloading Upstream HttpCore ${CORE_VER}"
-  $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  if [ ! -d "httpcore" ]; then
+    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  else
+    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  fi
+
   echo -e ">> Downloading Upstream HttpClient ${CLIENT_VER}"
-  $SVN_COMMAND https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  if [ ! -d "httpclient" ]; then
+    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  else
+    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  fi
+
   echo -e ">> Downloading Upstream HttpClient-Cache ${CACHE_VER}"
-  $SVN_COMMAND t https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
+  if [ ! -d "httpclient-cache" ]; then 
+    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
+  else
+    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
+  fi
+
   echo -e ">> Downloading Upstream HttpMime ${MIME_VER}"
-  $SVN_COMMAND  https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
+  if [ ! -d "httpmime" ]; then
+    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
+  else
+    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
+  fi
+
   if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
     echo -e ">> Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
     if [ ! -d "$KERBEROS_LIB_NAME" ]; then
@@ -72,6 +94,7 @@ if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
       git -C ${KERBEROS_LIB_NAME} reset --hard
     fi
   fi
+
 else
   echo -e ">> Skipping Upstream sources update"
 fi
