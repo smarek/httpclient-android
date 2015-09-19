@@ -35,6 +35,14 @@ if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
   GRADLEW_VERSION=2.5
 fi
 
+if [ ${VERBOSE} -eq 2 ]; then
+  VERBOSE=1 bash -x build.sh
+  exit 0
+elif [ ${VERBOSE} -ne 1 ]; then
+  GRADLE_COMMAND="${GRADLE_COMMAND} -q"
+  SVN_COMMAND="svn -q"
+fi
+
 if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
   GRADLE_COMMAND="./gradlew"
 else
@@ -42,11 +50,6 @@ else
   echo -e "========================"
   gradle --version
   echo -e "========================"
-fi
-
-if [ ${VERBOSE} -ne 1 ]; then
-  GRADLE_COMMAND="${GRADLE_COMMAND} -q"
-  SVN_COMMAND="svn -q"
 fi
 
 echo ">> Env Variables"
