@@ -13,7 +13,7 @@ Download the repository and simply hit `./build.sh` script
 Required dependencies are:
   - JDK 6 or newer
   - Gradle 2.4 or newer
-  - `find`, `grep`, `svn` and `sed` (or `gsed` for OS X)
+  - `find`, `grep`, `svn`, `patch` and `sed` (or `gsed` for OS X)
   - for Kerberos support you need `Android NDK`, `git` and `swig`
 
 ## Configuration
