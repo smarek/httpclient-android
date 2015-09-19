@@ -213,6 +213,7 @@ find . -name "*.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.decodeBase64(\([
 
 find . -name "*.java" -exec ${SED_CMD} "/commons\.logging\.Log;/c import ${PACKAGENAME}\.${EXTRAPACKAGENAME}\.HttpClientAndroidLog;" {} +
 find . -name "*.java" -exec ${SED_CMD} "/commons\.logging\.LogFactory;/c \/\* LogFactory removed by HttpClient for Android script. \*\/" {} +
+find . -name "*.java" -exec ${SED_CMD} "/javax\.naming/c \/\* Javax.Naming package removed by HttpClient for Android script. \*\/" {} +
 find . -name "*.java" -exec ${SED_CMD} 's/Log log/HttpClientAndroidLog log/g' {} +
 find . -name "*.java" -exec ${SED_CMD} 's/Log headerlog/HttpClientAndroidLog headerlog/g' {} +
 find . -name "*.java" -exec ${SED_CMD} 's/Log wirelog/HttpClientAndroidLog wirelog/g' {} +
@@ -239,6 +240,9 @@ echo ">> AndroidManifest.xml modification"
 cd ${ANDROIDPROJECTPATH}
 cp ../AndroidManifest.xml src/main/
 ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
+
+cd ${ANDROIDPROJECTPATH}
+patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.3.5
 
 echo ">> Gradle build proceed"
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
