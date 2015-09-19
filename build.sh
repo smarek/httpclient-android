@@ -16,7 +16,7 @@ MIME_VER=4.3.4
 
 : ${GRADLEW_VERSION:=2.6}
 : ${GRADLE_COMMAND:="gradle"}
-: ${SVN_COMMAND:="svn "}
+: ${SVN_COMMAND:="svn"}
 : ${USE_GRADLE_WRAPPER:=1}
 : ${UPDATE_UPSTREAM:=1}
 : ${INCLUDE_JGSS_API:=0}
@@ -37,11 +37,16 @@ fi
 
 if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
   GRADLE_COMMAND="./gradlew"
+else
+  echo -e "INSTALLED GRADLE VERSION"
+  echo -e "========================"
+  gradle --version
+  echo -e "========================"
 fi
 
 if [ ${VERBOSE} -ne 1 ]; then
   GRADLE_COMMAND="${GRADLE_COMMAND} -q"
-  SVN_COMMAND="svn -q "
+  SVN_COMMAND="svn -q"
 fi
 
 echo ">> Env Variables"

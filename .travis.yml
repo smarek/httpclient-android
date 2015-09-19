@@ -9,4 +9,6 @@ android:
   licenses:
     - '.+'
 script: 
+  - export VERBOSE=1
+  - export USE_GRADLE_WRAPPER=0
   - ./build.sh
