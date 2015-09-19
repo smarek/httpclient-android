@@ -8,10 +8,10 @@ ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
 EXTRAPACKAGENAME=extras
 KERBEROS_LIB_NAME="kerberos"
 
-CORE_VER=4.3.3
-CLIENT_VER=4.3.6
-CACHE_VER=4.3.6
-MIME_VER=4.3.6
+CORE_VER=4.4.1
+CLIENT_VER=4.4.1
+CACHE_VER=4.4.1
+MIME_VER=4.4.1
 
 : ${GRADLEW_VERSION:=2.6}
 : ${GRADLE_COMMAND:="gradle"}
@@ -166,6 +166,7 @@ if [ ${INCLUDE_JGSS_API} -ne 1 ]; then
   rm impl/auth/NegotiateSchemeFactory.java
   rm impl/auth/GGSSchemeBase.java
   rm impl/auth/KerberosScheme.java
+  rm auth/KerberosCredentials.java
   rm impl/auth/KerberosSchemeFactory.java
   rm impl/auth/SPNegoScheme.java
   rm impl/auth/SPNegoSchemeFactory.java
@@ -193,6 +194,7 @@ else
   cd ${PACKAGEDIR}
   find . -name "GssUtil.java" -exec ${SED_CMD} "s/new Boolean(second)\.toString();/Boolean.toString(second);/" {} +
   find . -name "GssUtil.java" -exec ${SED_CMD} "s/new Integer(second)\.toString();/Integer.toString(second);/" {} +
+  find . -name "GGSSchemeBase.java" -exec ${SED_CMD} "/final Base64 base64codec = new Base64(0);/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
   find . -name "GGSSchemeBase.java" -exec ${SED_CMD} "/private final Base64 base64codec;/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
   find . -name "GGSSchemeBase.java" -exec ${SED_CMD} "/this\.base64codec = new Base64(0);/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
   find . -name "GGSSchemeBase.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/base64codec.encode(\([^;]*\)));/Base64.encode(\1, Base64.NO_WRAP));/g;p;}' {} +
@@ -208,6 +210,7 @@ find . -name "BasicScheme.java" -exec ${SED_CMD} "/this\.base64codec = new Base6
 find . -name "BasicScheme.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.encodeBase64(\([^;]*\));/Base64.encode(\1, Base64.NO_WRAP);/g;p;}' {} +
 find . -name "BasicScheme.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/base64codec.encode(\([^;]*\));/Base64.encode(\1, Base64.NO_WRAP);/g;p;}' {} +
 find . -name "BasicScheme.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/EncodingUtils\.getBytes(tmp\.toString(), charset), false/EncodingUtils.getBytes(tmp.toString(), charset)/g;p;}' {} +
+find . -name "BasicScheme.java" -exec ${SED_CMD} "/final Base64 base64codec = new Base64(0);/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
 find . -name "NTLMEngineImpl.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.encodeBase64(resp)/Base64.encode(resp, Base64.NO_WRAP)/g;p;}' {} +
 find . -name "*.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.decodeBase64(\([^;]*\));/Base64.decode(\1, Base64.NO_WRAP);/g;p;}' {} +
 
@@ -242,7 +245,9 @@ cp ../AndroidManifest.xml src/main/
 ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
 
 cd ${ANDROIDPROJECTPATH}
-patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.3.5
+patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.4.1
+patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.4.1
+cp ../patches/DistinguishedNameParser.java ${PACKAGEDIR}/conn/ssl/
 
 echo ">> Gradle build proceed"
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
