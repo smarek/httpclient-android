@@ -34,11 +34,6 @@ android {
         // Default implementation of SecureRandom should be fixed by PRNGFixes.apply(), see http://android-developers.blogspot.cz/2013/08/some-securerandom-thoughts.html
         disable 'Assert', 'DefaultLocale', 'GetInstance', 'TrulyRandom'
     }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
-    }
 }
 
 android.libraryVariants.all { variant ->
