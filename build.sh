@@ -243,6 +243,7 @@ ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidMan
 
 cd ${ANDROIDPROJECTPATH}
 patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.3.5
+patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.3.5
 
 echo ">> Gradle build proceed"
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
