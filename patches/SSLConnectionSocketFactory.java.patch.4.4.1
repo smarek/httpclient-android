@@ -1,0 +1,27 @@
+29a30,35
+> import android.os.Build;
+> import android.util.Log;
+> import android.annotation.TargetApi;
+> import java.lang.reflect.InvocationTargetException;
+> import java.lang.reflect.Method;
+> 
+138a145
+>     public static final String TAG   = "SSLConnSockFact";
+393a401,417
+> 
+>         // Android specific code to enable SNI
+>         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+>             if (Log.isLoggable(TAG, Log.DEBUG)) {
+>                 Log.d(TAG, "Enabling SNI for " + target);
+>             }
+>             try {
+>                 Method method = sslsock.getClass().getMethod("setHostname", String.class);
+>                 method.invoke(sslsock, target);
+>             } catch (Exception ex) {
+>                 if (Log.isLoggable(TAG, Log.DEBUG)) {
+>                     Log.d(TAG, "SNI configuration failed", ex);
+>                 }
+>             }
+>         }
+>         // End of Android specific code
+>
