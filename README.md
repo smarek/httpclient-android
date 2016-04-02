@@ -2,7 +2,7 @@
 
 Build script and dependencies to create repackaged upstream version of HttpClient and depdendencies (HttpMime, HttpCore, HttpClient-Cache) and get it working on Android API version from 3 to 23
 
-Current version: **4.4.1.1** (originating from upstream HttpClient 4.4.1 version)
+Current version: **4.4.1.2** (originating from upstream HttpClient 4.4.1 version)
 
 ## Usage
 
@@ -27,7 +27,7 @@ Build params (ENV variables) you can use:
 
 ## Maven Central
 
-This repository version will publish the library under namespace `cz.msebera.android:httpclient:4.4.1.1`
+This repository version will publish the library under namespace `cz.msebera.android:httpclient:4.4.1.2`
 
 ## Maven Local
 
@@ -39,7 +39,7 @@ Gradle dependency string, once you have it installed
 
 ```gradle
 dependencies {
-  compile "cz.msebera.android:httpclient:4.4.1.1"
+  compile "cz.msebera.android:httpclient:4.4.1.2"
 }
 ```
 
