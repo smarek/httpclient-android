@@ -247,6 +247,7 @@ ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidMan
 cd ${ANDROIDPROJECTPATH}
 patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.4.1
 patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.4.1
+patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.4.1
 cp ../patches/DistinguishedNameParser.java ${PACKAGEDIR}/conn/ssl/
 
 echo ">> Gradle build proceed"
