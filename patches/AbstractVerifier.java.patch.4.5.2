@@ -1,8 +1,6 @@
-diff --git a/AbstractVerifier.java b/AbstractVerifier2.java
-index d7f7e8a..a1e772b 100644
---- a/AbstractVerifier.java
-+++ b/AbstractVerifier2.java
-@@ -136,7 +136,7 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
+--- AbstractVerifier.java	2016-05-16 15:46:13.000000000 -0700
++++ AbstractVerifier2.java	2016-05-16 15:51:35.000000000 -0700
+@@ -137,7 +137,7 @@
          final int subjectType = ipv4 || ipv6 ? DefaultHostnameVerifier.IP_ADDRESS_TYPE : DefaultHostnameVerifier.DNS_NAME_TYPE;
          final List<String> subjectAlts = DefaultHostnameVerifier.extractSubjectAlts(cert, subjectType);
          final X500Principal subjectPrincipal = cert.getSubjectX500Principal();
@@ -11,7 +9,7 @@ index d7f7e8a..a1e772b 100644
          verify(host,
                  cn != null ? new String[] {cn} : null,
                  subjectAlts != null && !subjectAlts.isEmpty() ? subjectAlts.toArray(new String[subjectAlts.size()]) : null);
-@@ -218,13 +218,8 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
+@@ -219,13 +219,8 @@
      }
  
      public static String[] getCNs(final X509Certificate cert) {
@@ -19,7 +17,7 @@ index d7f7e8a..a1e772b 100644
 -        try {
 -            final String cn = DefaultHostnameVerifier.extractCN(subjectPrincipal);
 -            return cn != null ? new String[] { cn } : null;
--        } catch (SSLException ex) {
+-        } catch (final SSLException ex) {
 -            return null;
 -        }
 +        final String cn = new DistinguishedNameParser(cert.getSubjectX500Principal()).findMostSpecific("cn");
