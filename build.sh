@@ -1,25 +1,26 @@
 #!/bin/bash
 
 PROJECTNAME=httpclient-android
-PACKAGENAME=cz.msebera.android.httpclient
+PACKAGENAME=com.esri.arcgisruntime.internal.httpclient
 ROOTDIR=`pwd`
 PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
 ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
 EXTRAPACKAGENAME=extras
 KERBEROS_LIB_NAME="kerberos"
+ANDROIDDIR="/Users/mich6984/git/java/android/api/AndroidAPI/arcgis-android"
 
-CORE_VER=4.4.3
-CLIENT_VER=4.4.1
-CACHE_VER=4.4.1
-MIME_VER=4.4.1
+CORE_VER=4.4.4
+CLIENT_VER=4.5.2
+CACHE_VER=4.5.2
+MIME_VER=4.5.2
 
-: ${GRADLEW_VERSION:=2.6}
+: ${GRADLEW_VERSION:=2.10}
 : ${GRADLE_COMMAND:="gradle"}
 : ${SVN_COMMAND:="svn"}
-: ${USE_GRADLE_WRAPPER:=1}
+: ${USE_GRADLE_WRAPPER:=0}
 : ${UPDATE_UPSTREAM:=1}
 : ${INCLUDE_JGSS_API:=0}
-: ${VERBOSE:=0}
+: ${VERBOSE:=1}
 
 if [[ $OSTYPE == darwin* ]]; then
   # For Mac OS X install gnu-sed from Homebrew or elsewhere, and use following SED_CMD
@@ -31,7 +32,7 @@ fi
 
 # Android Experimental Gradle plugin 2.0 works now only with 2.5 version
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
-  GRADLEW_VERSION=2.5
+  GRADLEW_VERSION=2.10
 fi
 
 if [ ${VERBOSE} -eq 2 ]; then
@@ -242,13 +243,15 @@ ${SED_CMD} "s/this\.rnd\.setSeed(System\.currentTimeMillis());//g" impl/client/c
 echo ">> AndroidManifest.xml modification"
 cd ${ANDROIDPROJECTPATH}
 cp ../AndroidManifest.xml src/main/
-${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
+${SED_CMD} "s/sedpackage/com\.esri\.arcgisruntime\.httpclient\.android/g" src/main/AndroidManifest.xml
 
 cd ${ANDROIDPROJECTPATH}
-patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.4.1
-patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.4.1
-patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.4.1
+patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.5.2
+patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.5.2
+patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.5.2
 cp ../patches/DistinguishedNameParser.java ${PACKAGEDIR}/conn/ssl/
+# cp -R ${ANDROIDPROJECTPATH}/src ${ANDROIDDIR}
+
 
 echo ">> Gradle build proceed"
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
@@ -258,6 +261,7 @@ else
 fi
 cp ../maven_push.gradle .
 cp ../gradle.properties .
+cp ../local.properties .
 
 
 if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
@@ -274,7 +278,7 @@ echo ""
 echo ">> Assemble and install archives to local Maven repository"
 echo ""
 
-${GRADLE_COMMAND} installArchives
+${GRADLE_COMMAND} assemble --info
 
 echo ""
 echo ">> Finished"

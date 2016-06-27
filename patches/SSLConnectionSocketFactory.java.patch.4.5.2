@@ -1,0 +1,54 @@
+--- SSLConnectionSocketFactory.java	2016-05-16 15:46:13.000000000 -0700
++++ SSLConnectionSocketFactory2.java	2016-05-16 15:58:13.000000000 -0700
+@@ -37,6 +37,8 @@
+ import java.util.Arrays;
+ import java.util.Collection;
+ import java.util.List;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
+ 
+ import javax.net.SocketFactory;
+ import javax.net.ssl.HostnameVerifier;
+@@ -47,6 +49,10 @@
+ import javax.net.ssl.SSLSocket;
+ import javax.security.auth.x500.X500Principal;
+ 
++import android.os.Build;
++import android.util.Log;
++import android.annotation.TargetApi;
++
+ import com.esri.arcgisruntime.httpclient.extras.HttpClientAndroidLog;
+ /* LogFactory removed by HttpClient for Android script. */
+ import com.esri.arcgisruntime.httpclient.HttpHost;
+@@ -140,6 +146,8 @@
+     public static final String SSL   = "SSL";
+     public static final String SSLV2 = "SSLv2";
+ 
++    public static final String TAG   = "SSLConnSockFact";
++
+     @Deprecated
+     public static final X509HostnameVerifier ALLOW_ALL_HOSTNAME_VERIFIER
+         = AllowAllHostnameVerifier.INSTANCE;
+@@ -389,6 +397,22 @@
+             this.log.debug("Enabled cipher suites:" + Arrays.asList(sslsock.getEnabledCipherSuites()));
+         }
+ 
++        // Android specific code to enable SNI
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
++            if (Log.isLoggable(TAG, Log.DEBUG)) {
++                Log.d(TAG, "Enabling SNI for " + target);
++            }
++            try {
++                Method method = sslsock.getClass().getMethod("setHostname", String.class);
++                method.invoke(sslsock, target);
++            } catch (Exception ex) {
++                if (Log.isLoggable(TAG, Log.DEBUG)) {
++                    Log.d(TAG, "SNI configuration failed", ex);
++                }
++            }
++        }
++        // End of Android specific code
++
+         prepareSocket(sslsock);
+         this.log.debug("Starting handshake");
+         sslsock.startHandshake();

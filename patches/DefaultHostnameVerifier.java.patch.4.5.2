@@ -1,8 +1,6 @@
-diff --git a/DefaultHostnameVerifier.java b/DefaultHostnameVerifier2.java
-index 7fe7cb4..b4d0382 100644
---- a/DefaultHostnameVerifier.java
-+++ b/DefaultHostnameVerifier2.java
-@@ -111,7 +111,7 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
+--- DefaultHostnameVerifier.java	2016-05-16 15:46:13.000000000 -0700
++++ DefaultHostnameVerifier2.java	2016-05-16 15:49:06.000000000 -0700
+@@ -127,7 +127,7 @@
              // CN matching has been deprecated by rfc2818 and can be used
              // as fallback only when no subjectAlts are available
              final X500Principal subjectPrincipal = cert.getSubjectX500Principal();
@@ -11,7 +9,7 @@ index 7fe7cb4..b4d0382 100644
              if (cn == null) {
                  throw new SSLException("Certificate subject for <" + host + "> doesn't contain " +
                          "a common name and does not have alternative names");
-@@ -229,34 +229,6 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
+@@ -245,34 +245,6 @@
          return matchIdentity(host, identity, null, true);
      }
  
@@ -32,13 +30,13 @@ index 7fe7cb4..b4d0382 100644
 -                        if (value != null) {
 -                            return value.toString();
 -                        }
--                    } catch (NoSuchElementException ignore) {
--                    } catch (NamingException ignore) {
+-                    } catch (final NoSuchElementException ignore) {
+-                    } catch (final NamingException ignore) {
 -                    }
 -                }
 -            }
 -            return null;
--        } catch (InvalidNameException e) {
+-        } catch (final InvalidNameException e) {
 -            throw new SSLException(subjectPrincipal + " is not a valid X500 distinguished name");
 -        }
 -    }

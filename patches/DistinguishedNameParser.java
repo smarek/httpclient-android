@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package cz.msebera.android.httpclient.conn.ssl;
+package com.esri.arcgisruntime.httpclient.conn.ssl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
