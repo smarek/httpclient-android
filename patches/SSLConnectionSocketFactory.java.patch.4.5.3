@@ -1,0 +1,49 @@
+diff --git a/SSLConnectionSocketFactory.java b/SSLConnectionSocketFactory.patch.java
+index e7f9b28..67b490a 100644
+--- a/SSLConnectionSocketFactory.java
++++ b/SSLConnectionSocketFactory.patch.java
+@@ -59,6 +59,12 @@ import org.apache.http.ssl.SSLContexts;
+ import org.apache.http.util.Args;
+ import org.apache.http.util.TextUtils;
+ 
++import android.os.Build;
++import android.util.Log;
++import android.annotation.TargetApi;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++
+ /**
+  * Layered socket factory for TLS/SSL connections.
+  * <p>
+@@ -141,6 +147,7 @@ public class SSLConnectionSocketFactory implements LayeredConnectionSocketFactor
+     public static final String TLS   = "TLS";
+     public static final String SSL   = "SSL";
+     public static final String SSLV2 = "SSLv2";
++    public static final String TAG   = "SSLConnSockFact";
+ 
+     @Deprecated
+     public static final X509HostnameVerifier ALLOW_ALL_HOSTNAME_VERIFIER
+@@ -392,6 +399,23 @@ public class SSLConnectionSocketFactory implements LayeredConnectionSocketFactor
+         }
+ 
+         prepareSocket(sslsock);
++
++        // Android specific code to enable SNI
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
++            if (this.log.isDebugEnabled()) {
++                this.log.debug("Enabling SNI for " + target);
++            }
++            try {
++                Method method = sslsock.getClass().getMethod("setHostname", String.class);
++                method.invoke(sslsock, target);
++            } catch (Exception ex) {
++                if (this.log.isDebugEnabled()) {
++                    this.log.debug("SNI configuration failed", ex);
++                }
++            }
++        }
++        // End of Android specific code
++
+         this.log.debug("Starting handshake");
+         sslsock.startHandshake();
+         verifyHostname(sslsock, target);

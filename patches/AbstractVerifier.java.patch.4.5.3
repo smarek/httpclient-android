@@ -1,17 +1,17 @@
-diff --git a/AbstractVerifier.java b/AbstractVerifier2.java
-index d7f7e8a..a1e772b 100644
+diff --git a/AbstractVerifier.java b/AbstractVerifier.patch.java
+index ef56890..e4bebe4 100644
 --- a/AbstractVerifier.java
-+++ b/AbstractVerifier2.java
-@@ -136,7 +136,7 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
-         final int subjectType = ipv4 || ipv6 ? DefaultHostnameVerifier.IP_ADDRESS_TYPE : DefaultHostnameVerifier.DNS_NAME_TYPE;
-         final List<String> subjectAlts = DefaultHostnameVerifier.extractSubjectAlts(cert, subjectType);
++++ b/AbstractVerifier.patch.java
+@@ -149,7 +149,7 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
+             }
+         }
          final X500Principal subjectPrincipal = cert.getSubjectX500Principal();
 -        final String cn = DefaultHostnameVerifier.extractCN(subjectPrincipal.getName(X500Principal.RFC2253));
 +        final String cn = new DistinguishedNameParser(subjectPrincipal).findMostSpecific("cn");
          verify(host,
                  cn != null ? new String[] {cn} : null,
                  subjectAlts != null && !subjectAlts.isEmpty() ? subjectAlts.toArray(new String[subjectAlts.size()]) : null);
-@@ -218,13 +218,8 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
+@@ -231,13 +231,8 @@ public abstract class AbstractVerifier implements X509HostnameVerifier {
      }
  
      public static String[] getCNs(final X509Certificate cert) {
@@ -19,7 +19,7 @@ index d7f7e8a..a1e772b 100644
 -        try {
 -            final String cn = DefaultHostnameVerifier.extractCN(subjectPrincipal);
 -            return cn != null ? new String[] { cn } : null;
--        } catch (SSLException ex) {
+-        } catch (final SSLException ex) {
 -            return null;
 -        }
 +        final String cn = new DistinguishedNameParser(cert.getSubjectX500Principal()).findMostSpecific("cn");

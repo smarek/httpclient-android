@@ -8,12 +8,12 @@ ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
 EXTRAPACKAGENAME=extras
 KERBEROS_LIB_NAME="kerberos"
 
-CORE_VER=4.4.3
-CLIENT_VER=4.4.1
-CACHE_VER=4.4.1
-MIME_VER=4.4.1
+CORE_VER=4.4.6
+CLIENT_VER=4.5.3
+CACHE_VER=4.5.3
+MIME_VER=4.5.3
 
-: ${GRADLEW_VERSION:=2.6}
+: ${GRADLEW_VERSION:=2.14.1}
 : ${GRADLE_COMMAND:="gradle"}
 : ${SVN_COMMAND:="svn"}
 : ${USE_GRADLE_WRAPPER:=1}
@@ -117,6 +117,18 @@ echo ""
 
 rm -rf ${ANDROIDPROJECTPATH}
 mkdir -p ${PACKAGEDIR}
+
+if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
+  cd ${PROJECTNAME}
+  echo ""
+  echo ">> Using Gradle Wrapper"
+  CMD="gradle"
+  if [ ${VERBOSE} -ne 1 ]; then
+    CMD="gradle -q"
+  fi
+  ${CMD} wrapper --gradle-version ${GRADLEW_VERSION}
+  cd ..
+fi
 
 CLIENTDIR=`find . -type d | grep '/httpclient/src/main/java/org/apache/http$'`
 CLIENTDEPRECATEDDIR=`find . -type d | grep '/httpclient/src/main/java-deprecated/org/apache/http$'`
@@ -245,9 +257,10 @@ cp ../AndroidManifest.xml src/main/
 ${SED_CMD} "s/sedpackage/cz\.msebera\.httpclient\.android/g" src/main/AndroidManifest.xml
 
 cd ${ANDROIDPROJECTPATH}
-patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.4.1
-patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.4.1
-patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.4.1
+patch ${PACKAGEDIR}/conn/ssl/DefaultHostnameVerifier.java ../patches/DefaultHostnameVerifier.java.patch.4.5.3
+patch ${PACKAGEDIR}/conn/ssl/AbstractVerifier.java ../patches/AbstractVerifier.java.patch.4.5.3
+patch ${PACKAGEDIR}/conn/ssl/SSLConnectionSocketFactory.java ../patches/SSLConnectionSocketFactory.java.patch.4.5.3
+find . -name '*.orig' -exec rm {} +
 cp ../patches/DistinguishedNameParser.java ${PACKAGEDIR}/conn/ssl/
 
 echo ">> Gradle build proceed"
@@ -258,17 +271,6 @@ else
 fi
 cp ../maven_push.gradle .
 cp ../gradle.properties .
-
-
-if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
-  echo ""
-  echo ">> Using Gradle Wrapper"
-  CMD="gradle"
-  if [ ${VERBOSE} -ne 1 ]; then
-    CMD="gradle -q"
-  fi
-  ${CMD} wrapper --gradle-version ${GRADLEW_VERSION}
-fi
 
 echo ""
 echo ">> Assemble and install archives to local Maven repository"

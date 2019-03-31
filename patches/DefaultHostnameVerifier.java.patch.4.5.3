@@ -1,8 +1,8 @@
-diff --git a/DefaultHostnameVerifier.java b/DefaultHostnameVerifier2.java
-index 7fe7cb4..b4d0382 100644
+diff --git a/DefaultHostnameVerifier.java b/DefaultHostnameVerifier.patch.java
+index 2844f3b..f468647 100644
 --- a/DefaultHostnameVerifier.java
-+++ b/DefaultHostnameVerifier2.java
-@@ -111,7 +111,7 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
++++ b/DefaultHostnameVerifier.patch.java
+@@ -125,7 +125,7 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
              // CN matching has been deprecated by rfc2818 and can be used
              // as fallback only when no subjectAlts are available
              final X500Principal subjectPrincipal = cert.getSubjectX500Principal();
@@ -11,7 +11,7 @@ index 7fe7cb4..b4d0382 100644
              if (cn == null) {
                  throw new SSLException("Certificate subject for <" + host + "> doesn't contain " +
                          "a common name and does not have alternative names");
-@@ -229,34 +229,6 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
+@@ -251,36 +251,6 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
          return matchIdentity(host, identity, null, true);
      }
  
@@ -32,17 +32,19 @@ index 7fe7cb4..b4d0382 100644
 -                        if (value != null) {
 -                            return value.toString();
 -                        }
--                    } catch (NoSuchElementException ignore) {
--                    } catch (NamingException ignore) {
+-                    } catch (final NoSuchElementException ignore) {
+-                        // ignore exception
+-                    } catch (final NamingException ignore) {
+-                        // ignore exception
 -                    }
 -                }
 -            }
 -            return null;
--        } catch (InvalidNameException e) {
+-        } catch (final InvalidNameException e) {
 -            throw new SSLException(subjectPrincipal + " is not a valid X500 distinguished name");
 -        }
 -    }
 -
-     static List<String> extractSubjectAlts(final X509Certificate cert, final int subjectType) {
-         Collection<List<?>> c = null;
-         try {
+     static HostNameType determineHostFormat(final String host) {
+         if (InetAddressUtils.isIPv4Address(host)) {
+             return HostNameType.IPv4;
