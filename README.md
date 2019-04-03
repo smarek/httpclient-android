@@ -49,3 +49,17 @@ dependencies {
   compile project("/path/to/generated/project/httpclient-android")
 }
 ```
+
+## Testing the library on the device
+
+To test the library, you can use provided android app template, in the /testing-android-app folder  
+
+This template currently just shows the response from https://httpbin.org/headers if successfull, and the error message otherwise
+
+```
+cd testing-android-app
+./gradlew clean instalDebug
+adb shell am start -n cz.msebera.android.httpclient.test/.MainActivity
+```
+
+If everything goes well, you should see, within seconds after running the last command, json with http headers of just finished HttpGet
