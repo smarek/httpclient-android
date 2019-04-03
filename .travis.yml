@@ -4,7 +4,7 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-23.0.1
+    - build-tools-23.0.3
     - android-23
   licenses:
     - '.+'
@@ -12,3 +12,4 @@ script:
   - export VERBOSE=1
   - export USE_GRADLE_WRAPPER=0
   - ./build.sh
+  - ./build_test_app.sh
