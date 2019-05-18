@@ -1,0 +1,31 @@
+diff --git a/NTLMEngineImpl.java b/NTLMEngineImpl.patch.java
+index 92a0ecc..4b5c89f 100644
+--- a/NTLMEngineImpl.java
++++ b/NTLMEngineImpl.patch.java
+@@ -1084,7 +1084,7 @@ final class NTLMEngineImpl implements NTLMEngine {
+ 
+         /** Constructor taking a string */
+         NTLMMessage(final String messageBody, final int expectedType) throws NTLMEngineException {
+-            this(Base64.decodeBase64(messageBody.getBytes(DEFAULT_CHARSET)), expectedType);
++            this(Base64.decode(messageBody.getBytes(DEFAULT_CHARSET), Base64.NO_WRAP), expectedType);
+         }
+ 
+         /** Constructor to use when message bytes are known */
+@@ -1220,7 +1220,7 @@ final class NTLMEngineImpl implements NTLMEngine {
+          * @return The response as above.
+          */
+         public String getResponse() {
+-            return new String(Base64.encodeBase64(getBytes()), Consts.ASCII);
++            return new String(Base64.encode(getBytes(), Base64.NO_WRAP), Consts.ASCII);
+         }
+ 
+         public byte[] getBytes() {
+@@ -1368,7 +1368,7 @@ final class NTLMEngineImpl implements NTLMEngine {
+         protected final int flags;
+ 
+         Type2Message(final String messageBody) throws NTLMEngineException {
+-            this(Base64.decodeBase64(messageBody.getBytes(DEFAULT_CHARSET)));
++            this(Base64.decode(messageBody.getBytes(DEFAULT_CHARSET), Base64.NO_WRAP));
+         }
+ 
+         Type2Message(final byte[] message) throws NTLMEngineException {

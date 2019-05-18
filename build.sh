@@ -1,21 +1,20 @@
 #!/bin/bash
 
-PROJECTNAME=httpclient-android
-PACKAGENAME=cz.msebera.android.httpclient
-ROOTDIR=`pwd`
-PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
-ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
-EXTRAPACKAGENAME=extras
-KERBEROS_LIB_NAME="kerberos"
+export PROJECTNAME=httpclient-android
+export PACKAGENAME=cz.msebera.android.httpclient
+export ROOTDIR=`pwd`
+export PACKAGEDIR=${ROOTDIR}/${PROJECTNAME}/src/main/java/${PACKAGENAME//./\/}
+export ANDROIDPROJECTPATH=${ROOTDIR}/${PROJECTNAME}
+export EXTRAPACKAGENAME=extras
+export KERBEROS_LIB_NAME="kerberos"
 
-CORE_VER=4.4.6
-CLIENT_VER=4.5.3
-CACHE_VER=4.5.3
-MIME_VER=4.5.3
+export CORE_VER=4.4.11
+export CLIENT_VER=4.5.8
 
 : ${GRADLEW_VERSION:=2.14.1}
 : ${GRADLE_COMMAND:="gradle"}
 : ${SVN_COMMAND:="svn"}
+: ${GIT_COMMAND:="git"}
 : ${USE_GRADLE_WRAPPER:=1}
 : ${UPDATE_UPSTREAM:=1}
 : ${INCLUDE_JGSS_API:=0}
@@ -58,6 +57,7 @@ echo -e "SED_CMD\t\t\t=\t${SED_CMD}"
 echo -e "USE_GRADLE_WRAPPER\t=\t${USE_GRADLE_WRAPPER}"
 echo -e "GRADLE_COMMAND\t\t=\t${GRADLE_COMMAND}"
 echo -e "SVN_COMMAND\t\t=\t${SVN_COMMAND}"
+echo -e "GIT_COMMAND\t\t=\t${GIT_COMMAND}"
 echo -e "VERBOSE\t\t\t=\t${VERBOSE}"
 echo ""
 
@@ -65,32 +65,16 @@ if [ ${UPDATE_UPSTREAM} -eq 1 ]; then
   # Updating upstream code bases
 
   echo -e ">> Downloading Upstream HttpCore ${CORE_VER}"
-  if [ ! -d "httpcore" ]; then
-    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
-  else
-    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpcore/tags/${CORE_VER}/httpcore/ httpcore
+  if [ -d "httpcore" ]; then
+    rm -rf httpcore
   fi
+  $GIT_COMMAND clone -b "${CORE_VER}" https://github.com/apache/httpcomponents-core.git httpcore
 
   echo -e ">> Downloading Upstream HttpClient ${CLIENT_VER}"
-  if [ ! -d "httpclient" ]; then
-    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
-  else
-    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CLIENT_VER}/httpclient/ httpclient
+  if [ -d "httpclient" ]; then
+    rm -rf httpclient
   fi
-
-  echo -e ">> Downloading Upstream HttpClient-Cache ${CACHE_VER}"
-  if [ ! -d "httpclient-cache" ]; then 
-    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
-  else
-    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${CACHE_VER}/httpclient-cache/ httpclient-cache
-  fi
-
-  echo -e ">> Downloading Upstream HttpMime ${MIME_VER}"
-  if [ ! -d "httpmime" ]; then
-    $SVN_COMMAND checkout https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
-  else
-    $SVN_COMMAND switch https://svn.apache.org/repos/asf/httpcomponents/httpclient/tags/${MIME_VER}/httpmime/ httpmime
-  fi
+  $GIT_COMMAND clone -b "${CLIENT_VER}" https://github.com/apache/httpcomponents-client.git httpclient
 
   if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
     echo -e ">> Downloading Java GSS-API wrapper for the MIT Kerberos GSS-API library"
@@ -130,19 +114,29 @@ if [ ${USE_GRADLE_WRAPPER} -eq 1 ]; then
   cd ..
 fi
 
-CLIENTDIR=`find . -type d | grep '/httpclient/src/main/java/org/apache/http$'`
-CLIENTDEPRECATEDDIR=`find . -type d | grep '/httpclient/src/main/java-deprecated/org/apache/http$'`
-CLIENTCACHEDIR=`find . -type d | grep '/httpclient-cache/src/main/java/org/apache/http$'`
-CLIENTMIMEDIR=`find . -type d | grep '/httpmime/src/main/java/org/apache/http$'`
-COREDIR=`find . -type d | grep '/httpcore/src/main/java/org/apache/http$'`
-COREDEPRECATEDDIR=`find . -type d | grep '/httpcore/src/main/java-deprecated/org/apache/http$'`
+export CLIENTDIR=`find . -type d | grep '/httpclient/src/main/java/org/apache/http$'`
+export CLIENTDEPRECATEDDIR=`find . -type d | grep '/httpclient/httpclient/src/main/java-deprecated/org/apache/http$'`
+export CLIENTCACHEDIR=`find . -type d | grep '/httpclient/httpclient-cache/src/main/java/org/apache/http$'`
+export CLIENTMIMEDIR=`find . -type d | grep '/httpclient/httpmime/src/main/java/org/apache/http$'`
+export COREDIR=`find . -type d | grep '/httpcore/httpcore/src/main/java/org/apache/http$'`
+export COREDEPRECATEDDIR=`find . -type d | grep '/httpcore/src/main/java-deprecated/org/apache/http$'`
+
+echo -e "CLIENTDIR\t\t=\t${CLIENTDIR}"
+echo -e "CLIENTDEPRECATEDDIR\t=\t${CLIENTDEPRECATEDDIR}"
+echo -e "CLIENTCACHEDIR\t\t=\t${CLIENTCACHEDIR}"
+echo -e "CLIENTMIMEDIR\t\t=\t${CLIENTMIMEDIR}"
+echo -e "COREDIR\t\t\t=\t${COREDIR}"
+echo -e "COREDEPRECATEDDIR\t=\t${COREDEPRECATEDDIR}"
 
 if [ ${INCLUDE_JGSS_API} -eq 1 ]; then
-  GSSJAVADIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/src$"`
-  GSSNATIVEDIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/jni$"`
+  export GSSJAVADIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/src$"`
+  export GSSNATIVEDIR=`find . -type d | grep "/$KERBEROS_LIB_NAME/jni$"`
   echo -e "GSSJAVADIR\t\t=\t${GSSJAVADIR}"
   echo -e "GSSNATIVEDIR\t\t=\t${GSSNATIVEDIR}"
 fi
+
+#bash
+#exit
 
 echo ">> Copying upstream sources into correct directories"
 cd ${ROOTDIR}/${COREDIR}
@@ -214,6 +208,10 @@ else
   find . -name "edu_mit_kerberos_KerberosAppActivity.h" -exec rm {} +
 fi
 
+# sed rules for all types of calls in NTLMEngineImpl replaced with patch file
+cd ${ANDROIDPROJECTPATH}
+patch ${PACKAGEDIR}/impl/auth/NTLMEngineImpl.java ../patches/NTLMEngineImpl.java.patch.4.5.8
+
 cd ${PACKAGEDIR}
 
 find . -name "*.java" -exec ${SED_CMD} "/commons\.codec\.binary\.Base64;/c import ${PACKAGENAME}\.${EXTRAPACKAGENAME}.Base64;" {} +
@@ -224,17 +222,16 @@ find . -name "BasicScheme.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/base64codec.e
 find . -name "BasicScheme.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/EncodingUtils\.getBytes(tmp\.toString(), charset), false/EncodingUtils.getBytes(tmp.toString(), charset)/g;p;}' {} +
 find . -name "BasicScheme.java" -exec ${SED_CMD} "/final Base64 base64codec = new Base64(0);/c \/\* Base64 instance removed by HttpClient for Android script. \*\/" {} +
 find . -name "NTLMEngineImpl.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.encodeBase64(resp)/Base64.encode(resp, Base64.NO_WRAP)/g;p;}' {} +
-find . -name "*.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.decodeBase64(\([^;]*\));/Base64.decode(\1, Base64.NO_WRAP);/g;p;}' {} +
+find . -name "*.java" -exec ${SED_CMD} -n '1h;1!H;${;g;s/Base64.decodeBase64(\([^,]*\))/Base64.decode(\1, Base64.NO_WRAP)/g;p;}' {} +
 
 find . -name "*.java" -exec ${SED_CMD} "/commons\.logging\.Log;/c import ${PACKAGENAME}\.${EXTRAPACKAGENAME}\.HttpClientAndroidLog;" {} +
 find . -name "*.java" -exec ${SED_CMD} "/commons\.logging\.LogFactory;/c \/\* LogFactory removed by HttpClient for Android script. \*\/" {} +
 find . -name "*.java" -exec ${SED_CMD} "/javax\.naming/c \/\* Javax.Naming package removed by HttpClient for Android script. \*\/" {} +
 find . -name "*.java" -exec ${SED_CMD} 's/Log log/HttpClientAndroidLog log/g' {} +
-find . -name "*.java" -exec ${SED_CMD} 's/Log headerlog/HttpClientAndroidLog headerlog/g' {} +
-find . -name "*.java" -exec ${SED_CMD} 's/Log wirelog/HttpClientAndroidLog wirelog/g' {} +
+find . -name "*.java" -exec ${SED_CMD} 's/Log headerLog/HttpClientAndroidLog headerLog/g' {} +
+find . -name "*.java" -exec ${SED_CMD} 's/Log wireLog/HttpClientAndroidLog wireLog/g' {} +
 find . -name "*.java" -exec ${SED_CMD} 's/private final HttpClientAndroidLog \(.*\) = LogFactory.getLog(\(.*\));/public HttpClientAndroidLog \1 = new HttpClientAndroidLog(\2);/g' {} +
-find . -name "*.java" -exec ${SED_CMD} 's/private final Log \(.*\) = LogFactory.getLog(\(.*\));/public HttpClientAndroidLog \1 = new HttpClientAndroidLog(\2);/g' {} +
-find . -name "*.java" -exec ${SED_CMD} 's/private final HttpClientAndroidLog log/public HttpClientAndroidLog log/g' {} +
+find . -name "*.java" -exec ${SED_CMD} 's/final Log \(.*\) = LogFactory.getLog(\(.*\));/final HttpClientAndroidLog \1 = new HttpClientAndroidLog(\2);/g' {} +
 find . -name "*.java" -exec ${SED_CMD} 's/LogFactory.getLog(\(.*\))/new HttpClientAndroidLog(\1)/g' {} +
 
 echo ">> Replacing org.apache.http with ${PACKAGENAME}"
