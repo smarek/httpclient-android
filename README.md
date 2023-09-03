@@ -1,6 +1,6 @@
 # httpclient-android [![Build Status](https://travis-ci.org/smarek/httpclient-android.svg)](https://travis-ci.org/smarek/httpclient-android)
 
-Build script and dependencies to create repackaged upstream version of HttpClient and depdendencies (HttpMime, HttpCore, HttpClient-Cache) and get it working on Android API version from 3 to 23
+Build script and dependencies to create repackaged upstream version of HttpClient and dependencies (HttpMime, HttpCore, HttpClient-Cache) and get it working on Android API version from 3 to 23
 
 Current version: **4.5.8** (originating from upstream HttpClient 4.5.8 version)
 
@@ -54,7 +54,7 @@ dependencies {
 
 To test the library, you can use provided android app template, in the /testing-android-app folder  
 
-This template currently just shows the response from https://httpbin.org/headers if successfull, and the error message otherwise
+This template currently just shows the response from https://httpbin.org/headers if successful, and the error message otherwise
 
 ```
 cd testing-android-app
